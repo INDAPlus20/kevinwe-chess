@@ -28,7 +28,7 @@ pub struct Piece{
     rank: char
     file: i32
     taken: bool
-//possible_moves
+//possible_moves vec
 }
 
 pub struct Game {
