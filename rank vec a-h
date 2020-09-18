@@ -1,0 +1,40 @@
+rank vec 1-8
+file vec a-h
+
+move (&self, char rank, int file)
+    if movelegality (&self, rank, file) == true
+        //move piece
+        &self.rank() = rank
+        &self.file() = file
+    else print "wait, that's illegal"
+
+movelegality (&self, char rank, int file)
+
+        //is move allowed for piece?
+            if move allowed for &self.type()
+
+                //is square empty?
+                if positioncheck(rank, file) != 0
+
+                    //take piece? only if opposite colour
+                    if colour not same as &self.colour()
+                        positioncheck(rank, file).taken = true
+                        return true
+                    return false
+                return true
+            return false
+
+draw()
+    for file 1..8
+        for rank a..h
+            piecechecker()    if piece.rank() == rank && piece.file() == file
+                    add piece + " " to string
+            else add " . " to string
+        print string
+    print \n
+
+positioncheck(char rank, int file)
+    for piece in pieces
+        if piece.rank() == rank && piece.file() == file
+            return piece
+        else return 0
