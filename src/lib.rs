@@ -27,6 +27,8 @@ pub struct Piece{
     colour: Colour
     rank: char
     file: i32
+    taken: bool
+//possible_moves
 }
 
 pub struct Game {
@@ -49,6 +51,8 @@ impl Game {
             pieceType,
             rank,
             file,
+            taken,
+
         }
     }
     /// If the current game state is InProgress and the move is legal, 
