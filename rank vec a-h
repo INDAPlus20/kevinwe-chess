@@ -34,7 +34,7 @@ draw()
     print \n
 
 positioncheck(char rank, int file)
-    for piece in pieces
+for piece in pieces
         if piece.rank() == rank && piece.file() == file
             return piece
         else return 0
