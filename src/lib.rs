@@ -24,13 +24,14 @@ pub enum PieceType {
     King, Queen, Bishop, Knight, Rook, Pawn
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Piece{
     pieceType: PieceType,
     colour: Colour,
     rank: i8,
     file: i8,
     taken: bool,
-    hasMoved: bool
+    has_moved: bool
 //possible_moves vec
 }
 
@@ -38,8 +39,6 @@ pub struct Game {
     /* save board, active colour, ... */
     state: GameState,
     pieces: Vec<Piece>,
-    ranks: Vec<u8>,
-    files: Vec<u8>,
 }
 
 impl Game {
@@ -49,8 +48,6 @@ impl Game {
             /* initialise board, set active colour to white, ... */
             state: GameState::InProgress,
             pieces: Vec::new(),
-            ranks: (1..=8).map(|v| v ).collect::<Vec<u8>>(),
-            files: (1..=8).map(|v| v ).collect::<Vec<u8>>(),
         }
     }
     //makes a new piece of a given type at a given position
@@ -61,7 +58,7 @@ impl Game {
             rank,
             file,
             taken: false,
-            hasMoved: false,
+            has_moved: false,
         }
     }
 
@@ -89,96 +86,150 @@ impl Game {
     //  None
     //}
 
-
-    // [0 1 0 -1]
-    // [1 0 -1 0]
-    // while not all directions stopped do each direction, much better
-
+pub fn position_check(_rank: i8, _file: i8) -> Option<Piece>{
+    unimplemented!()
+}
 
 impl Piece{
-    pub fn get_possible_moves(&self) -> Vec<(i8, i8)>{
-        // storing moves in vec, can maybe use collect() for this?
-        let moves = Vec::new();
-        if self.pieceType == PieceType::Pawn{
+    //given a piece, returns vector of possible move targets
+    pub fn get_possible_moves(self) -> Vec<(i8, i8)>{
+        let mut moves = Vec::new();
+        
+        if self.pieceType == PieceType::Pawn {
             
-            if self.colour == Colour::White && positionCheck(self.rank + 1, self.file).is_none(){
-                if self.hasMoved == false && positionCheck(self.rank + 2, self.file).is_none(){
+            if self.colour == Colour::White && position_check(self.rank + 1, self.file).is_none(){
+                if self.has_moved == false && position_check(self.rank + 2, self.file).is_none(){
                     moves.push((self.rank + 2, self.file))
                 }
                 moves.push((self.rank + 1, self.file))
             }
-            if self.colour == Colour::Black && positionCheck(self.rank - 1, self.file).is_none(){
-                if self.hasMoved == false && positionCheck(self.rank - 2, self.file).is_none(){
+            if self.colour == Colour::Black && position_check(self.rank - 1, self.file).is_none(){
+                if self.has_moved == false && position_check(self.rank - 2, self.file).is_none(){
                     moves.push ((self.rank - 2, self.file))
                 }
                 moves.push((self.rank - 1, self.file))
             }
+            if self.colour == Colour::White && position_check(self.rank + 1, self.file + 1).is_some(){
+                moves.push((self.file + 1, self.file + 1))
+            }
+            if self.colour == Colour::White && position_check(self.rank + 1, self.file + 1).is_some(){
+                moves.push((self.file + 1, self.file - 1))
+            }
+            if self.colour == Colour::Black && position_check(self.rank + 1, self.file + 1).is_some(){
+                moves.push((self.file - 1, self.file + 1))
+            }
+            if self.colour == Colour::Black && position_check(self.rank + 1, self.file + 1).is_some(){
+                moves.push((self.file - 1, self.file - 1))
+            }
         }
-        if self.pieceType == PieceType::Rook{
+        if self.pieceType == PieceType::Rook {
             
-            // for each direction, offset 1 and then go outwards
-            // [0, 1, 0, -1] rank offset
-            // [1, 0, -1, 0] file offset
+            // make offset to loop through different directions
 
             let offset: Vec<(i8, i8)> = vec![(0, 1), (1, 0), (0, -1), (-1, 0)];
+            // for each direction
             for direction in offset {
+                //for each distance
                 for scalar in 1..8 {
-                    if positionCheck(self.rank + scalar * direction.0, self.file + scalar * direction.1).is_some(){
-                        if positionCheck(self.rank + scalar * direction.0, self.file + scalar * direction.1).unwrap().colour != self.colour{
+                    //check if something's there
+                    if position_check(self.rank + scalar * direction.0, self.file + scalar * direction.1).is_some(){
+                        //if it's the same colour, we can move there
+                        if position_check(self.rank + scalar * direction.0, self.file + scalar * direction.1).unwrap().colour != self.colour{
                             moves.push((self.rank + scalar * direction.0, self.file + scalar * direction.1));
                         }
-                    break
+                        //if not, we can't move there and we can't move past it
+                        break
                     }
+                    //if nothing's there we can move there
                     moves.push((self.rank + scalar * direction.0, self.file + scalar * direction.1))
                 }
             }
         }
  
-        if self.pieceType == PieceType::Bishop{
-            // rook code with different offset
+        if self.pieceType == PieceType::Bishop {
+            // rook code with different offset -> different movement direction
             let offset: Vec<(i8, i8)> = vec![(1, 1), (1, -1), (-1, 1), (-1, -1)];
             for direction in offset {
                 for scalar in 1..8 {
-                    if positionCheck(self.rank + scalar * direction.0, self.file + scalar * direction.1).is_some(){
-                        if positionCheck(self.rank + scalar * direction.0, self.file + scalar * direction.1).unwrap().colour != self.colour{
+                    if position_check(self.rank + scalar * direction.0, self.file + scalar * direction.1).is_some(){
+                        if position_check(self.rank + scalar * direction.0, self.file + scalar * direction.1).unwrap().colour != self.colour{
                             moves.push((self.rank + scalar * direction.0, self.file + scalar * direction.1));
                         }
-                    break
+                        break
                     }
                     moves.push((self.rank + scalar * direction.0, self.file + scalar * direction.1))
                 }
             }
         } 
-
-        if self.pieceType == PieceType::Knight{
-            let offset = Vec<(i8, i8)> =
-            vec![(1, 2), (2, 1), (-1, 2), (2, -1), (1, -2), (-2, 1), (-1, -2), (-2, -1)];    
-            
+    
+        if self.pieceType == PieceType::Knight {
+            // ponies can move in 8 different directions, no scalar needed
+            let offset: Vec<(i8, i8)> =
+            vec![(1, 2), (2, 1), (-1, 2), (2, -1), (1, -2), (-2, 1), (-1, -2), (-2, -1)];
+            for direction in offset{
+                //as long as no friendly piece, it can move there
+                //check if something's there
+                if position_check(self.rank + direction.0, self.file + direction.1).is_some(){
+                    //if it's not the same colour, we can move there
+                    if position_check(self.rank + direction.0, self.file + direction.1).unwrap().colour != self.colour{
+                        moves.push((self.rank + direction.0, self.file + direction.1));
+                    }
+                }
+                //if nothing is there we can also move there
+                if position_check(self.rank + direction.0, self.file + direction.1).is_none(){
+                    moves.push((self.rank + direction.0, self.file + direction.1));
+                }
+                
+            }    
         }
-        if self.pieceType == PieceType::King{
-            
+        if self.pieceType == PieceType::King {
+            //kings move like knights except not as far
+            let offset: Vec<(i8, i8)> = vec![(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)];
+            for direction in offset{
+                if position_check(self.rank + direction.0, self.file + direction.1).is_some(){
+                    //if it's not the same colour, we can move there
+                    if position_check(self.rank + direction.0, self.file + direction.1).unwrap().colour != self.colour{
+                        moves.push((self.rank + direction.0, self.file + direction.1));
+                    }
+                //if nothing is there we can also move there
+                if position_check(self.rank + direction.0, self.file + direction.1).is_none(){
+                    moves.push((self.rank + direction.0, self.file + direction.1));
+                    }
+                }
+            }
         }
-        if self.pieceType == PieceType::Queen{
-            
+        if self.pieceType == PieceType::Queen {
+            //queens move like rook and bishop combined
+            let offset: Vec<(i8, i8)> = vec![(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)];
+            for direction in offset {
+                for scalar in 1..8 {
+                    if position_check(self.rank + scalar * direction.0, self.file + scalar * direction.1).is_some(){
+                        if position_check(self.rank + scalar * direction.0, self.file + scalar * direction.1).unwrap().colour != self.colour{
+                            moves.push((self.rank + scalar * direction.0, self.file + scalar * direction.1));
+                        }
+                        break
+                    }
+                    moves.push((self.rank + scalar * direction.0, self.file + scalar * direction.1))
+                }
+            }
         }
         return moves    
-}
-pub fn positionCheck(_rank, _file) -> Option<Piece>{
-    unimplemented!()
-}
-
-pub fn draw(){ 
-    for rank in 1..=8 {
-        let mut _line: String;
-        for file in 1..=8{
-            if positionCheck(rank, file).is_some(){
-                    _line +=  " " + positionCheck(rank, file).unwrap().pieceType + " " ;
-            }
-            else {_line += " . "}
-        format! _line
-        }
     }
 }
+
+
+//pub fn draw(){ 
+    //for rank in 1..=8 {
+      //  let mut _line: String;
+        //for file in 1..=8{
+          //  if position_check(rank, file).is_some(){
+            //        _line +=  " " + position_check(rank, file).unwrap().pieceType + " " ;
+            //}
+            //else {_line += " . "}
+        //println! ("{}",_line)
+        //}
+    //}
+//}
 
 
 /// Implement print routine for Game.
@@ -210,6 +261,9 @@ impl fmt::Debug for Game {
 mod tests {
     use super::Game;
     use super::GameState;
+    use super::Piece;
+    use super::Colour;
+    use super::PieceType;
 
     // check test framework
     #[test]
@@ -227,5 +281,14 @@ mod tests {
         println!("{:?}", game);
 
         assert_eq!(game.get_game_state(), GameState::InProgress);
+    }
+    #[test]
+    fn rook_movement(){
+
+        let mut game = Game::new();
+
+        let mut rook = Game::make_piece(Colour::White, PieceType::Rook, 4, 4);
+        game.pieces.push(rook);
+        println! ("{:?}", Piece::get_possible_moves(game.pieces[0]));
     }
 }
