@@ -67,29 +67,10 @@ impl Game {
         }
         return None;
     }
-
-    /// If the current game state is InProgress and the move is legal, 
-    /// move a piece and return the resulting state of the game.
-    pub fn make_move(&mut self, _from: (i8, i8), _to: (i8, i8)) -> Option<GameState> {
-        
-        
-        return Some(GameState::InProgress)
-    }
-
-    /// Set the piece type that a peasant becames following a promotion.
-    pub fn set_promotion(&mut self, _piece: String) -> () {
-        ()
-    }
-
-    /// Get the current game state.
-    pub fn get_game_state(&self) -> GameState {
-        self.state
-    }
-    //given a piece, returns vector of possible move targets
     pub fn get_possible_moves(piece: Piece) -> Vec<(i8, i8)>{
         let mut moves = Vec::new();
         
-        if piece.pieceType == "P" {
+        if piece.pieceType == "P".to_string() {
             
             if piece.colour == Colour::White && position_check(piece.rank + 1, piece.file).is_none(){
                 if piece.has_moved == false && position_check(piece.rank + 2, piece.file).is_none(){
@@ -116,7 +97,7 @@ impl Game {
                 moves.push((piece.file - 1, piece.file - 1))
             }
         }
-        if piece.pieceType == "R" {
+        if piece.pieceType == "R".to_string() {
             
             // make offset to loop through different directions
 
@@ -140,7 +121,7 @@ impl Game {
             }
         }
  
-        if piece.pieceType == "B" {
+        if piece.pieceType == "B".to_string() {
             // rook code with different offset -> different movement direction
             let offset: Vec<(i8, i8)> = vec![(1, 1), (1, -1), (-1, 1), (-1, -1)];
             for direction in offset {
@@ -156,7 +137,7 @@ impl Game {
             }
         } 
     
-        if piece.pieceType == "Kn" {
+        if piece.pieceType == "Kn".to_string() {
             // ponies can move in 8 different directions, no scalar needed
             let offset: Vec<(i8, i8)> =
             vec![(1, 2), (2, 1), (-1, 2), (2, -1), (1, -2), (-2, 1), (-1, -2), (-2, -1)];
@@ -176,7 +157,7 @@ impl Game {
                 
             }    
         }
-        if piece.pieceType == "K" {
+        if piece.pieceType == "K".to_string() {
             //kings move like knights except not as far
             let offset: Vec<(i8, i8)> = vec![(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)];
             for direction in offset{
@@ -192,7 +173,7 @@ impl Game {
                 }
             }
         }
-        if piece.pieceType == "Q" {
+        if piece.pieceType == "Q".to_string() {
             //queens move like rook and bishop combined
             let offset: Vec<(i8, i8)> = vec![(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)];
             for direction in offset {
@@ -209,6 +190,28 @@ impl Game {
         }
         return moves    
     }
+
+    /// If the current game state is InProgress and the move is legal, 
+    /// move a piece and return the resulting state of the game.
+    pub fn make_move(&mut self, _from: (i8, i8), _to: (i8, i8)) -> Option<GameState> {
+        for action in get_possible_moves(self){
+
+        }
+        
+        return Some(GameState::InProgress)
+    }
+
+    /// Set the piece type that a peasant becames following a promotion.
+    pub fn set_promotion(&mut self, _piece: String) -> () {
+        ()
+    }
+
+    /// Get the current game state.
+    pub fn get_game_state(&self) -> GameState {
+        self.state
+    }
+    //given a piece, returns vector of possible move targets
+    
 }    
     
 
