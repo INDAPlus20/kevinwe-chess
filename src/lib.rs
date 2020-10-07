@@ -23,6 +23,7 @@ pub enum Colour {
 pub struct Piece{
     pieceType: String,
     colour: Colour,
+    // should've just made rank + file a single data type
     rank: i8,
     file: i8,
     taken: bool,
@@ -59,57 +60,60 @@ impl Game {
             has_moved: false,
         }
     }
-    pub fn position_check(self, _rank: i8, _file: i8) -> Option<Piece>{
-        for piece in self.pieces{
+    pub fn position_check(&self, _rank: i8, _file: i8) -> Option<Piece>{
+        for piece in self.pieces.clone(){
             if piece.rank == _rank && piece.file == _file{
                 return Some(piece);
             }
         }
         return None;
     }
-    pub fn get_possible_moves(piece: Piece) -> Vec<(i8, i8)>{
+    pub fn get_possible_moves(&self, piece: Piece) -> Vec<(i8, i8)>{
         let mut moves = Vec::new();
         
         if piece.pieceType == "P".to_string() {
-            
-            if piece.colour == Colour::White && position_check(piece.rank + 1, piece.file).is_none(){
-                if piece.has_moved == false && position_check(piece.rank + 2, piece.file).is_none(){
+            // whites go up
+            if piece.colour == Colour::White && self.position_check(piece.rank + 1, piece.file).is_none(){
+                if piece.has_moved == false && self.position_check(piece.rank + 2, piece.file).is_none(){
                     moves.push((piece.rank + 2, piece.file))
                 }
                 moves.push((piece.rank + 1, piece.file))
             }
-            if piece.colour == Colour::Black && position_check(piece.rank - 1, piece.file).is_none(){
-                if piece.has_moved == false && position_check(piece.rank - 2, piece.file).is_none(){
+            // blacks go down
+            if piece.colour == Colour::Black && self.position_check(piece.rank - 1, piece.file).is_none(){
+                if piece.has_moved == false && self.position_check(piece.rank - 2, piece.file).is_none(){
                     moves.push ((piece.rank - 2, piece.file))
                 }
                 moves.push((piece.rank - 1, piece.file))
             }
-            if piece.colour == Colour::White && position_check(piece.rank + 1, piece.file + 1).is_some(){
+            // we can move diagonally if we can take
+            if piece.colour == Colour::White && self.position_check(piece.rank + 1, piece.file + 1).is_some() && self.position_check(piece.rank + 1, piece.file + 1).unwrap().colour == Colour::Black{
                 moves.push((piece.file + 1, piece.file + 1))
             }
-            if piece.colour == Colour::White && position_check(piece.rank + 1, piece.file + 1).is_some(){
+            if piece.colour == Colour::White && self.position_check(piece.rank + 1, piece.file - 1).is_some() && self.position_check(piece.rank + 1, piece.file - 1).unwrap().colour == Colour::Black{
                 moves.push((piece.file + 1, piece.file - 1))
             }
-            if piece.colour == Colour::Black && position_check(piece.rank + 1, piece.file + 1).is_some(){
+            if piece.colour == Colour::Black && self.position_check(piece.rank - 1, piece.file + 1).is_some() && self.position_check(piece.rank - 1, piece.file + 1).unwrap().colour == Colour::White{
                 moves.push((piece.file - 1, piece.file + 1))
             }
-            if piece.colour == Colour::Black && position_check(piece.rank + 1, piece.file + 1).is_some(){
+            if piece.colour == Colour::Black && self.position_check(piece.rank - 1, piece.file + 1).is_some() && self.position_check(piece.rank - 1, piece.file - 1).unwrap().colour == Colour::White{
                 moves.push((piece.file - 1, piece.file - 1))
             }
         }
         if piece.pieceType == "R".to_string() {
-            
-            // make offset to loop through different directions
+            // TODO: add boundary checks!
 
+
+            // make offset to loop through different directions
             let offset: Vec<(i8, i8)> = vec![(0, 1), (1, 0), (0, -1), (-1, 0)];
             // for each direction
             for direction in offset {
                 //for each distance
                 for scalar in 1..8 {
                     //check if something's there
-                    if position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).is_some(){
-                        //if it's the same colour, we can move there
-                        if position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).unwrap().colour != piece.colour{
+                    if self.position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).is_some() {
+                        //if it's not the same colour, we can move there
+                        if self.position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).unwrap().colour != piece.colour{
                             moves.push((piece.rank + scalar * direction.0, piece.file + scalar * direction.1));
                         }
                         //if not, we can't move there and we can't move past it
@@ -126,8 +130,8 @@ impl Game {
             let offset: Vec<(i8, i8)> = vec![(1, 1), (1, -1), (-1, 1), (-1, -1)];
             for direction in offset {
                 for scalar in 1..8 {
-                    if position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).is_some(){
-                        if position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).unwrap().colour != piece.colour{
+                    if self.position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).is_some(){
+                        if self.position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).unwrap().colour != piece.colour{
                             moves.push((piece.rank + scalar * direction.0, piece.file + scalar * direction.1));
                         }
                         break
@@ -144,14 +148,14 @@ impl Game {
             for direction in offset{
                 //as long as no friendly piece, it can move there
                 //check if something's there
-                if position_check(piece.rank + direction.0, piece.file + direction.1).is_some(){
+                if self.position_check(piece.rank + direction.0, piece.file + direction.1).is_some(){
                     //if it's not the same colour, we can move there
-                    if position_check(piece.rank + direction.0, piece.file + direction.1).unwrap().colour != piece.colour{
+                    if self.position_check(piece.rank + direction.0, piece.file + direction.1).unwrap().colour != piece.colour{
                         moves.push((piece.rank + direction.0, piece.file + direction.1));
                     }
                 }
                 //if nothing is there we can also move there
-                if position_check(piece.rank + direction.0, piece.file + direction.1).is_none(){
+                if self.position_check(piece.rank + direction.0, piece.file + direction.1).is_none(){
                     moves.push((piece.rank + direction.0, piece.file + direction.1));
                 }
                 
@@ -161,13 +165,13 @@ impl Game {
             //kings move like knights except not as far
             let offset: Vec<(i8, i8)> = vec![(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)];
             for direction in offset{
-                if position_check(piece.rank + direction.0, piece.file + direction.1).is_some(){
+                if self.position_check(piece.rank + direction.0, piece.file + direction.1).is_some(){
                     //if it's not the same colour, we can move there
-                    if position_check(piece.rank + direction.0, piece.file + direction.1).unwrap().colour != piece.colour{
+                    if self.position_check(piece.rank + direction.0, piece.file + direction.1).unwrap().colour != piece.colour{
                         moves.push((piece.rank + direction.0, piece.file + direction.1));
                     }
                 //if nothing is there we can also move there
-                if position_check(piece.rank + direction.0, piece.file + direction.1).is_none(){
+                if self.position_check(piece.rank + direction.0, piece.file + direction.1).is_none(){
                     moves.push((piece.rank + direction.0, piece.file + direction.1));
                     }
                 }
@@ -178,8 +182,8 @@ impl Game {
             let offset: Vec<(i8, i8)> = vec![(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)];
             for direction in offset {
                 for scalar in 1..8 {
-                    if position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).is_some(){
-                        if position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).unwrap().colour != piece.colour{
+                    if self.position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).is_some(){
+                        if self.position_check(piece.rank + scalar * direction.0, piece.file + scalar * direction.1).unwrap().colour != piece.colour{
                             moves.push((piece.rank + scalar * direction.0, piece.file + scalar * direction.1));
                         }
                         break
@@ -191,16 +195,6 @@ impl Game {
         return moves    
     }
 
-    /// If the current game state is InProgress and the move is legal, 
-    /// move a piece and return the resulting state of the game.
-    pub fn make_move(&mut self, _from: (i8, i8), _to: (i8, i8)) -> Option<GameState> {
-        for action in get_possible_moves(self){
-
-        }
-        
-        return Some(GameState::InProgress)
-    }
-
     /// Set the piece type that a peasant becames following a promotion.
     pub fn set_promotion(&mut self, _piece: String) -> () {
         ()
@@ -210,37 +204,19 @@ impl Game {
     pub fn get_game_state(&self) -> GameState {
         self.state
     }
-    //given a piece, returns vector of possible move targets
-    
-}    
-    
-
-
-
-
-
-/// If a piece is standing on the given tile, return all possible 
-    /// new positions of that piece. Don't forget to the rules for check. 
-    /// 
-    /// (optional) Don't forget to include en passent and castling.
-    //pub fn get_possible_moves(&self, _postion: String) -> Option<Vec<String>> {
-    //  None
-    //}
-
-
-
-impl Piece{
-    
 }
 
 
 pub fn draw(game: Game){ 
+    //for each line in board, we make a line
     for rank in 1..=8 {
         let mut _line: String = "".to_string();
+        //for each square we check what's there and add it to the line
         for file in 1..=8{
-            if position_check(rank, file).is_some(){
+            if game.position_check(rank, file).is_some(){
                     _line += " ";
-                    _line += position_check(rank, file).unwrap().pieceType;
+                    //TODO: fix, i still don't understand how strings work in this language
+                    //_line += game.position_check(rank, file).unwrap().pieceType;
                     _line += " ";
             }
             else {_line += " . "}
@@ -306,6 +282,6 @@ mod tests {
 
         let mut rook = Game::make_piece(Colour::White, "R".to_string(), 4, 4);
         game.pieces.push(rook);
-        println! ("{:?}", Piece::get_possible_moves(game.pieces[0], game));
+        println! ("{:?}", Game::get_possible_moves(&game, game.pieces[0].clone()));
     }
 }
